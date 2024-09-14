@@ -1,0 +1,48 @@
+https://github.com/raspberrypi/pico-examples/tree/master/pio/st7789_lcd
+
+https://gist.github.com/andreban/c311733165ffc8e7e36ced1378458b34
+
+root@878430b078ee:/workspace/build# cmake .. -DPICO_BOARD=pico_w
+
+--
+
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "hardware/spi.h"
+#include "st7789.h"
+
+// Pin definitions
+#define PIN_BL 1
+#define PIN_CLK 4
+#define PIN_MOSI 5
+#define PIN_CS 7
+#define PIN_DC 10
+#define PIN_RST 11
+
+// SPI port to use
+#define SPI_PORT spi0
+
+int main() {
+    // Initialize the ST7789 driver with a blank screen
+    uint16_t frame_buffer[240 * 320] = {0}; // Frame buffer for 240x320 resolution, initially black
+    St7789 display(240, 320, frame_buffer, SPI_PORT, PIN_DC, PIN_RST, PIN_CLK, PIN_MOSI, PIN_CS);
+    display.init();
+
+    // Fill the screen with white
+    for (int y = 0; y < 320; y++) {
+        for (int x = 0; x < 240; x++) {
+            frame_buffer[y * 240 + x] = 0x0000; // White color in RGB565 format
+        }
+    }
+    display.update();
+
+    // Blink the backlight every 5 seconds
+    while (true) {
+        gpio_put(PIN_BL, 0); // Turn off the backlight
+        sleep_ms(5000);
+        gpio_put(PIN_BL, 1); // Turn on the backlight
+        sleep_ms(5000);
+    }
+
+    return 0;
+}
